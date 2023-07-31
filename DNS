@@ -1,0 +1,116 @@
+https://mpolinowski.github.io/docs/DevOps/Provisioning/2022-01-25--installing-bind9-docker/2022-01-25/
+https://medium.com/nagoya-foundation/running-a-dns-server-in-docker-61cc2003e899
+
+
+Configurar un servidor dns en debian para que responda a la direccion 10.10.10.5/24
+con nombre ktech.duckdns.org para una red lan privada 
+que tenga registrado  el alias ns1.ktech.duckdns.org a su direccion 10.10.10.5
+ns2.ktech.duckdns.org tenga la direccion 10.10.10.6
+kerio.ktech.duckdns.org tenga la direccion 10.10.10.1
+que este sea el dns primario 
+mi gateway o interface de salida a internet es una vmquerio que esta corriendo en la ip 10.10.10.1 que repondera al nombre de kerio.ktech.duckdns.org
+ChatGPT
+Para configurar un servidor DNS en Debian y lograr el escenario que deseas, puedes seguir estos pasos:
+
+Instalación del servidor DNS (Bind9):
+Abre una terminal en Debian y ejecuta los siguientes comandos para instalar Bind9, que es un popular servidor DNS en Linux:
+
+bash
+Copy code
+sudo apt update
+sudo apt install bind9 dnsutils
+Configuración de las zonas y registros:
+Edita el archivo de configuración principal de Bind9:
+
+bash
+Copy code
+sudo nano /etc/bind/named.conf.local
+Agrega las siguientes líneas al archivo para configurar las zonas y registros:
+
+bind
+Copy code
+zone "ktech.duckdns.org" {
+    type master;
+    file "/etc/bind/db.ktech.duckdns.org";
+};
+
+zone "10.10.10.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.10";
+};
+Crea los archivos de zona:
+Crea los archivos de zona para la zona ktech.duckdns.org y la zona inversa 10.10.10.in-addr.arpa:
+
+bash
+Copy code
+sudo nano /etc/bind/db.ktech.duckdns.org
+Agrega el siguiente contenido al archivo de zona ktech.duckdns.org:
+
+bind
+Copy code
+$TTL 86400
+@       IN      SOA     ns1.ktech.duckdns.org. admin.ktech.duckdns.org. (
+                        2023072301      ; Serial
+                        3600            ; Refresh
+                        1800            ; Retry
+                        604800          ; Expire
+                        86400 )         ; Minimum TTL
+;
+@       IN      NS      ns1.ktech.duckdns.org.
+@       IN      NS      ns2.ktech.duckdns.org.
+ns1     IN      A       10.10.10.5
+ns2     IN      A       10.10.10.6
+kerio   IN      A       10.10.10.1
+Guarda el archivo y crea el archivo de zona inversa:
+
+bash
+Copy code
+sudo nano /etc/bind/db.10
+Agrega el siguiente contenido al archivo de zona inversa:
+
+bind
+Copy code
+$TTL 86400
+@       IN      SOA     ns1.ktech.duckdns.org. admin.ktech.duckdns.org. (
+                        2023072301      ; Serial
+                        3600            ; Refresh
+                        1800            ; Retry
+                        604800          ; Expire
+                        86400 )         ; Minimum TTL
+;
+@       IN      NS      ns1.ktech.duckdns.org.
+@       IN      NS      ns2.ktech.duckdns.org.
+5       IN      PTR     ktech.duckdns.org.
+6       IN      PTR     ns2.ktech.duckdns.org.
+1       IN      PTR     kerio.ktech.duckdns.org.
+Reinicia Bind9:
+Reinicia el servicio Bind9 para que los cambios surtan efecto:
+
+bash
+Copy code
+sudo systemctl restart bind9
+Configura el resolv.conf:
+Edita el archivo de configuración resolv.conf para usar el servidor DNS local que acabas de configurar:
+
+bash
+Copy code
+sudo nano /etc/resolv.conf
+Agrega la siguiente línea al archivo resolv.conf:
+
+Copy code
+nameserver 127.0.0.1
+Guarda el archivo y cierra el editor.
+
+Verificación:
+Para verificar que la configuración del servidor DNS funciona correctamente, puedes usar el comando dig para consultar los registros DNS:
+
+bash
+Copy code
+dig ktech.duckdns.org
+dig -x 10.10.10.5
+Si todo está configurado correctamente, deberías obtener las respuestas adecuadas.
+
+Con esto, deberías tener un servidor DNS local configurado en Debian que responde a la dirección 10.10.10.5 y los nombres solicitados en la red LAN privada.
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
