@@ -1,0 +1,188 @@
+Documentacion
+https://stackoverflow.com/questions/6480687/how-to-grep-for-two-words-existing-on-the-same-line
+
+https://docs.microsoft.com/en-us/powershell/module/activedirectory/get-adgroupmember?view=windowsserver2022-ps
+https://www.alexmedina.net/habilitar-la-ejecucion-de-scripts-para-powershell/
+https://docs.microsoft.com/en-us/powershell/module/activedirectory/new-aduser?view=windowsserver2022-ps
+https://nksistemas.com/listar-usuarios-de-un-grupo-de-ad-con-powershell-windows-2019/
+https://informaticamadridmayor.es/tips/new-aduser-creacion-masiva-de-usuarios-de-ad-mediante-powershell/
+https://informaticamadridmayor.es/tips/set-aduser-como-cambiar-las-propiedades-de-usuario-en-active-directory-con-powershell/
+https://superuser.com/questions/740596/powershell-create-a-new-active-directory-user-with-password-as-a-secure-string
+https://stackoverflow.com/questions/36060176/adding-user-to-group-after-running-new-aduser
+https://docs.microsoft.com/en-us/powershell/module/activedirectory/set-adaccountpassword?view=windowsserver2022-ps
+
+Syntax:
+New-ADUser [-Name] <string> [-WhatIf] [-Confirm] [-AccountExpirationDate <datetime>] [-AccountNotDelegated <bool>] [-AccountPassword <securestring>] 
+[-AllowReversiblePasswordEncryption <bool>] [-AuthenticationPolicy <ADAuthenticationPolicy>] [-AuthenticationPolicySilo <ADAuthenticationPolicySilo>] 
+[-AuthType <ADAuthType>] [-CannotChangePassword <bool>] [-Certificates <X509Certificate[]>] [-ChangePasswordAtLogon <bool>] [-City <string>] [-Company <string>]
+ [-CompoundIdentitySupported <bool>] [-Country <string>] [-Credential <pscredential>] [-Department <string>] [-Description <string>] [-DisplayName <string>]
+ [-Division <string>] [-EmailAddress <string>] [-EmployeeID <string>] [-EmployeeNumber <string>] [-Enabled <bool>] [-Fax <string>] [-GivenName <string>] 
+ [-HomeDirectory <string>] [-HomeDrive <string>] [-HomePage <string>] [-HomePhone <string>] [-Initials <string>] [-Instance <ADUser>]
+ [-KerberosEncryptionType <ADKerberosEncryptionType>] [-LogonWorkstations <string>] [-Manager <ADUser>] [-MobilePhone <string>] [-Office <string>]
+ [-OfficePhone <string>] [-Organization <string>] [-OtherAttributes <hashtable>] [-OtherName <string>] [-PassThru] [-PasswordNeverExpires <bool>] 
+ [-PasswordNotRequired <bool>] [-Path <string>] [-POBox <string>] [-PostalCode <string>] [-PrincipalsAllowedToDelegateToAccount <ADPrincipal[]>] 
+ [-ProfilePath <string>] [-SamAccountName <string>] [-ScriptPath <string>] [-Server <string>] [-ServicePrincipalNames <string[]>] [-SmartcardLogonRequired <bool>] 
+ [-State <string>] [-StreetAddress <string>] [-Surname <string>] [-Title <string>] [-TrustedForDelegation <bool>] [-Type <string>] [-UserPrincipalName <string>]
+ [<CommonParameters>]
+
+
+
+
+Final Parameters to set:
+----------------------
+New-ADUser 
+-Name "AAAuser test" 
+-GivenName "soloNombre" 
+-DisplayName "NombreAMostrar" 
+-Surname "soloApellido" 
+-UserPrincipalName "userPrincipalName" 
+-SamAccountName "cuentaAcceso" 
+-Path "OU=Clientes WIFI,DC=cim,DC=sld,DC=cu" 
+-PasswordNeverExpires $true 
+-ChangePasswordAtLogon $false 
+-AccountPassword $secpasswd 
+-Description "MacAddess"  
+-PasswordNotRequired $true // Do not set passwdor
+-Enabled $true 
+
+-PassThru | % {Add-ADGroupMember -Identity "Clientes WIFI" -Members $_} 
+
+ -------------------------------------------------
+ Define new env variable with encripted passwd:
+ PS C:\> $Pass = ConvertTo-SecureString "Password@123" -AsPlainText -Force
+ PS C:\> Set-ADAccountPassword -Identity "SamAccountName" -NewPassword $passwd -Reset
+ 
+ -------------------------------------------------
+ 
+ INLINE Change:
+ Set-ADAccountPassword -Identity "SamAccountName" -NewPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -Reset
+ 
+
+----------------------------------------------------------------------
+I prefer to do this on two separate lines
+
+# First Createst the user 
+PS c:\> New-ADUser ...
+
+
+# Second line to add prevous created user to specific Active Directory Group Membership
+PS c:\> Add-ADGroupMember -Identity "name_of_group" -Members "username"
+
+# Other way to do it in one line (using -PassThru)
+
+New-ADUser ... -PassThru | % {Add-ADGroupMember -Identity "Clientes WIFI" -Members $_}
+ 
+ 
+ 
+************************
+SETTING PASSWORD AS PLAIN TEXT
+$secpasswd = ConvertTo-SecureString -String "NOPASSWORD" -AsPlainText -Force
+New-ADuser -Name 'johnd' -GivenName'John' -Surname 'Doe' -DisplayName 'John Doe' -AccountPassword $secpasswd
+************************ 
+ 
+ 
+----------------------------------------------------------------------
+Add Only One New User  to Active Directory 
+---------------------------------------------------------------------- 
+ 
+PS C:\> New-ADUser -Name "AAAuser test" -GivenName "soloNombre" -DisplayName "NombreAMostrar" -Surname "soloApellido" -UserPrincipalName "userPrincipalName" -SamAccountName "cuentaAcceso" -Path "OU=Clientes WIFI,DC=cim,DC=sld,DC=cu" -PasswordNeverExpires $true -ChangePasswordAtLogon $false -PasswordNotRequired $true -Description "MacAddess"  -Enabled $false -PassThru | % {Add-ADGroupMember -Identity "Clientes WIFI" -Members $_} 
+
+
+
+--------- Stored Passwd --------
+PS C:\> $pwd = ConvertTo-SecureString -String "NOPASSWORD" -AsPlainText -Force
+PS C:\> Set-ADAccountPassword -Identity "SamAccountName" -NewPassword $pwd -Reset
+--------- INLINE PASSWD --------
+PS C:\> Set-ADAccountPassword -Identity "SamAccountName" -NewPassword (ConvertTo-SecureString -AsPlainText "p@ssw0rd" -Force) -Reset
+
+
+------------
+Real full user AP
+PS C:\> New-ADUser -Name "Daibel Inle Martinez Sanchez (movil Samsung A10S)" -GivenName "Daibel" -DisplayName "Daibel Inle Martinez Sanchez (movil Samsung A10S )" -Surname "Martinez Sanchez" -UserPrincipalName "f08a76b7822a" -SamAccountName "f08a76b7822a" -Path "OU=Clientes WIFI,DC=cim,DC=sld,DC=cu" -PasswordNeverExpires $true  -ChangePasswordAtLogon $false -PasswordNotRequired $true -Description "f08a76b7822a"  -Enabled $false -PassThru | % {Add-ADGroupMember -Identity "Clientes WIFI" -Members $_} 
+PS C:\> Set-ADAccountPassword -Identity "f08a76b7822a" -NewPassword (ConvertTo-SecureString -AsPlainText "f08a76b7822a" -Force) -Reset
+
+
+------------
+Real full user  APX
+------------
+PS C:\> New-ADUser -Name "Daibel Inle Martinez Sanchez (movil Samsung A10S APX)" -GivenName "Daibel" -DisplayName "Daibel Inle Martinez Sanchez (movil Samsung A10S )" -Surname "Martinez Sanchez" -UserPrincipalName "F0-8A-76-B7-82-2A" -SamAccountName "MacADDR" -Path "OU=Clientes WIFI,DC=cim,DC=sld,DC=cu" -PasswordNeverExpires $true  -ChangePasswordAtLogon $false -PasswordNotRequired $true -Description "DescriptionMC"  -Enabled $false -PassThru | % {Add-ADGroupMember -Identity "Clientes WIFI" -Members $_} 
+PS C:\> Set-ADAccountPassword -Identity "passwMacAddress" -NewPassword (ConvertTo-SecureString -AsPlainText "PASSWORD" -Force)  -Reset
+
+
+
+------------
+Real full user  APX FINAL // -PasswordNeverExpires $true  -ChangePasswordAtLogon $true
+PS C:\>Set-ADUser -Identity <samAccountName> -CannotChangePassword:$true -PasswordNeverExpires:$true -ChangePasswordAtLogon:$false
+
+------------
+PS C:\> New-ADUser -Name "Daibel Inle Martinez Sanchez (movil Samsung A10S APX)" -GivenName "Daibel" -DisplayName "Daibel Inle Martinez Sanchez (movil Samsung A10S )" -Surname "Martinez Sanchez" -UserPrincipalName "F0-8A-76-B7-82-2A" -SamAccountName "F0-8A-76-B7-82-2A" -Path "OU=Clientes WIFI,DC=cim,DC=sld,DC=cu" -Description "F0-8A-76-B7-82-2A"  -AccountPassword (ConvertTo-SecureString -String "Abc1290*" -AsPlainText -Force) -Enabled $true 
+PS C:\> Add-ADGroupMember -Identity "Clientes WIFI" -Members "F0-8A-76-B7-82-2A" 
+PS C:\> Set-ADAccountPassword -Identity "F0-8A-76-B7-82-2A" -NewPassword (ConvertTo-SecureString -AsPlainText "NOPASSWORD" -Force)  -Reset
+PS C:\> Set-ADUser -Identity "F0-8A-76-B7-82-2A" -Enabled $true -CannotChangePassword:$true -PasswordNeverExpires:$true -ChangePasswordAtLogon:$false
+
+
+
+    
+-----------------------------------------------------------------------------------------------------------------
+Creación masiva de usuarios de AD a partir de un archivo CVS mediante el script de PowerShell
+                   https://informaticamadridmayor.es/tips/new-aduser-creacion-masiva-de-usuarios-de-ad-mediante-powershell/
+				   https://docs.microsoft.com/en-us/powershell/scripting/windows-powershell/ise/how-to-write-and-run-scripts-in-the-windows-powershell-ise?view=powershell-7.2
+
+
+					If you use double quotes you can reference the variable directly in the string as they allow variable expansion, while single quotes do not allow this.
+					$filename = "foo.csv"
+					Write-Output "The file $filename has been processed."
+					-> The file foo.csv has been processed.
+					Also, echo is actually just an alias for Write-Output, so I've used the full name.
+                  Other way
+					$filename = "foo.csv"
+					Write-Host 'The file' $filename 'has been processed.'
+					-> The file foo.csv has been processed.
+
+
+Si tiene que crear varios usuarios de Active Directory a la vez, es más fácil guardar la lista de usuarios en el formato de CSV (Excel) y luego ejecute un script especial de PowerShell. En este archivo, debe completar todos los atributos de usuario importantes.
+
+Por ejemplo, mi archivo Excel de usuarios consta de 8 columnas y tiene el siguiente formato de encabezado:
+
+FirstName;LastName;SamAccountName;Phone;Department;JobTitle;Password;OU
+
+Complete los datos del usuario y guarde el archivo de Excel en formato CSV con comas como carácter de separación. La codificación debe establecerse en UTF-8 (¡es importante!). Los valores de la columna OU contienen comas, por lo que debe utilizar comillas dobles.
+
+https://informaticamadridmayor.es/wp-content/uploads/2021/06/1624706741_876_New-ADUser-creacion-masiva-de-usuarios-de-AD-mediante-PowerShell.png
+
+Ahora puede importar este archivo CSV (create_new_ad_users.csv) y crear nuevos usuarios en el dominio AD. El código del script PowerShell listo se muestra a continuación:
+
+https://informaticamadridmayor.es/wp-content/uploads/2021/06/1624706741_842_New-ADUser-creacion-masiva-de-usuarios-de-AD-mediante-PowerShell.png
+
+Nota. Si está utilizando ";"Como carácter de separación en su archivo CSV, agregue -delimitador ";" argumento a su cmdlet Import-Csv.
+
+Import-Module activedirectory
+Import-Csv "C:pscreate_new_ad_users.csv" | ForEach-Object {
+$upn = $_.SamAccountName + “@woshub.com”
+$uname = $_.LastName + " " + $_.FirstName
+New-ADUser -Name $uname `
+-DisplayName $uname `
+-GivenName $_.FirstName `
+-Surname $_.LastName `
+-OfficePhone $_.Phone `
+-Department $_.Department `
+-Title $_.JobTitle `
+-UserPrincipalName $upn `
+-SamAccountName $_.samAccountName `
+-Path $_.OU `
+-AccountPassword (ConvertTo-SecureString $_.Password -AsPlainText -force) -Enabled $true
+}
+
+https://informaticamadridmayor.es/wp-content/uploads/2021/06/1624706741_692_New-ADUser-creacion-masiva-de-usuarios-de-AD-mediante-PowerShell.png
+
+Una vez que haya ejecutado el script, abra la consola de ADUC, expanda el contenedor de AD especificado y asegúrese de que hayan aparecido nuevas cuentas de usuario en el AD. (Puede realizar un seguimiento de la creación de cuentas de usuario en las cuentas de AD de la siguiente manera: Obtener cuentas de Active Directory creadas en las últimas X horas / días).
+
+https://informaticamadridmayor.es/wp-content/uploads/2021/06/1624706741_48_New-ADUser-creacion-masiva-de-usuarios-de-AD-mediante-PowerShell.png
+
+Puede agregar las cuentas creadas al grupo de AD específico mediante el cmdlet Add-AdGroupMember. Para hacerlo, modifique el script agregando esta línea al bucle For-Each:
+
+Add-AdGroupMember -Identity AllowInternetAccess-Members $_.samAccountName
+
+O puede configurar la foto de usuario en AD para mostrarla en Outlook y Lync usando el cmdlet Set-ADUser:
+
+Set-ADUser $_.samAccountName -Replace @{thumbnailPhoto=([byte[]](Get-Content "C:psl.wolf.jpg" -Encoding byte))}
