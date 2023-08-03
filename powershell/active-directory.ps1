@@ -1,4 +1,6 @@
-
+###  Author:  Daibel Inle Martinez Sanchez [Konrad Zuse]
+###  E-mail:  konradzuse.dm@gmail.com
+###  Date  :  2022-08-1 
 #Import-Module activedirectory
 
 Import-Csv "C:\test\luserslist.csv"  -Delimiter ";" | Select-Object  name,lname,mac,model,path,pass,adgroup | ForEach-Object {
