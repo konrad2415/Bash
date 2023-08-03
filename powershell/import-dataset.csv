@@ -1,0 +1,7 @@
+Name;lname;mac;model;path;pass;adgroup
+Daibel; Martinez  Sanchez ;F0-8A-76-B7-82-2A;Samsung A10s;OU=Clients Team,DC=companyDC,DC=com;PASSWORD;Clients Team
+Reynier Alejandro; Benitez Gonzales;a45590bd01aa;;OU=Clients Team,DC=companyDC,D=com;PASSWORD;Clients Team
+
+
+Chequear:
+;;;;OU=Clientes_WIFI,DC=companyDC,DC=com;PASSWORD;Clients Team
